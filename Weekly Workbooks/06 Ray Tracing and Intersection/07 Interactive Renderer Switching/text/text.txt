@@ -1,0 +1,7 @@
+As a final task in this workbook, add some additional key event handlers to your program that allows the user to interactively switch between the three main modes of rendering:
+
+- Wireframe: Stroked/Outline triangles
+- Rasterised: Filled Triangles drawn using your rasterising code
+- Ray Traced: Filled Triangles drawn using your brand-new raytracing code
+
+This will prove very useful later on in the unit for interactive testing: it will allow you to navigate the camera around the scene using the FAST wireframe or rasterised renderers. Then, once the camera is in the desired position, you can switch to the (much slower) Ray Traced renderer to view the fully lit scene from the current position.

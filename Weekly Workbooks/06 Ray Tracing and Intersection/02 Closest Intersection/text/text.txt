@@ -1,0 +1,19 @@
+The first objective we need to achieve when attempting to perform ray tracing is to be able to detect when (and where) a projected ray intersects with a model triangle. Watch the narrated slides and animations above to gain a theoretical understanding of how to perform this operation.
+
+With the knowledge gained, your task is to write a function called `getClosestIntersection` that take the position of the camera (as a `vec3`) and the direction of a ray being cast from the camera into the scene (also as a `vec3`). This function should search through the all the triangles in the current scene and return details of the _closest_ intersected triangle (if indeed there is an intersection !).
+
+We appreciate that this is a complex task, so to help you get started, the code below is the C++ equivalent of the ray/triangle intersection equation that was shown in the slides above:  
+
+``` cpp
+glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+glm::vec3 SPVector = cameraPosition - triangle.vertices[0];
+glm::mat3 DEMatrix(-rayDirection, e0, e1);
+glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
+```
+
+Remember that the `possibleSolution` calculated by the above code is NOT the `(x,y,z)` coordinates of a point in 3 dimensional space, but rather a three-element data structure that consists of:
+
+- `t` the _absolute_ distance along the ray from the camera to the intersection point
+- `u` the _proportional_ distance along the triangle's first edge that the intersection point occurs
+- `v` the _proportional_ distance along the triangle's second edge that the intersection point occurs

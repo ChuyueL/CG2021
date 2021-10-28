@@ -1,0 +1,1 @@
+At this stage, it probably doesn't seem like you have made any progress - if anything, this is a _slower_ way of getting the same results as with the rasteriser. In the following tasks however (and next week as well), we will be doing things that are either hard or impossible to do with a rasteriser - so stick with it, this is all going to be worth it !

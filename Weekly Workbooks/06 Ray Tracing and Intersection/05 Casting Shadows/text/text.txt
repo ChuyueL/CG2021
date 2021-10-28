@@ -1,0 +1,7 @@
+Shadows are a key element of 3D rendering that we have until this point not addressed. We see shadows all the time in the real world (just take a look around you now !). If we want our renders to look realistic, we are going to need to simulate them.
+
+Determining whether or not a particular point on a surface should be drawn in shadow is conceptually relatively straight-forward. All we have to ask ourselves is: can that point "see" the light ? However, there are some additional complexities that we have to deal with when implementing a consistent shadow effect. Review the slides and audio narrative relating to shadows above and then implement the concepts in your Ray Tracer.
+
+It is worth noting that your already-implemented `getClosestIntersection` function does a lot of the work required in order to check for the visibility of the light from a point on a surface. You may however need to invest a bit of time refactoring it to make it versatile enough to be used for this purpose.
+
+Once you have implemented a shadow feature, your render of the Cornell box should look something a little bit like the image below (depending on where you position your light source !). Note that your shadow may well look a little bit "speckly" and you might have shadows appearing where you wouldn't expect to see them. Don't worry - this is all to be expected - we will fix this in the following task ! 

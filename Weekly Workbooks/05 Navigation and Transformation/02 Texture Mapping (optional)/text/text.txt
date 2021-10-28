@@ -1,0 +1,9 @@
+This is an optional task that your can complete if you have the time (and desire) to do so. Later workbooks do not rely upon the features implemented, so it is safe to leave this task out (for the time being) if you have fallen behind with the workbooks.
+
+The aim of this task is to integrate the texture mapping function that you implemented in a previous workbook into your 3D rasteriser. Rather than drawing the floor of the Cornell Box model as two plain green triangles, you should texture these triangles using our usual <a href="models/texture.ppm" target="_blank">texture image</a>.
+
+Take a look at the slides and audio narration above for more information on how OBJ files handle textures. Use this knowledge to extend your file parsing functions to read and then store the additional texture information. Note that the `ModelTriangle` class contains an array of `TexturePoints` to help you maintain the relationship between triangle vertices and texture point coordinates.
+
+To help you in this task, we have provided an <a href="models/textured-cornell-box.mtl" target="_blank">updated OBJ materials file</a> and an <a href="models/textured-cornell-box.obj" target="_blank">updated OBJ geometry file</a> both of which contain additional texture information (namely: a new textured material called "Cobbles", texture mapping points for some of the vertices in the model and a reference to the texture PPM image file).
+
+Try to get your render looking _similar_ to that shown in the diagram below. Don't spend too long trying to get the textured floor looking right (because you'll never manage it !) You might have an intuition that something isn't quite right with this approach to texture mapping in 3D (and that something is to do with depth and perspective). Try not to worry about this too much at the moment - we will return to the topic of 3D texture mapping in a later workbook.
