@@ -13,17 +13,20 @@
 #include <ModelTriangle.h>
 #include <unordered_map>
 
-#define WIDTH 320
-#define HEIGHT 240
+#define WIDTH 640
+#define HEIGHT 480
 #define MULTIPLIER 500
 
+std::vector<CanvasTriangle> texturedTriangles;
 
 std::vector<ModelTriangle> modelTriangles;
 const float scalingFactor = 0.17;
 std::unordered_map<std::string, Colour> colourPalette;
 
-const glm::vec3 CameraPos(0.0, 0.0, 4.0);
+const glm::vec3 CameraPos(0.0, 0.0, 2.0);
 const float FocalLen = 1.0;
+
+std::vector<std::vector<float>> depthBuffer;
 
 
 std::vector<float> interpolateSingleFloats(float from, float to, int numberOfValues) {
@@ -35,10 +38,11 @@ std::vector<float> interpolateSingleFloats(float from, float to, int numberOfVal
 
 	for (size_t i = 0; i < numberOfValues - 1; i++)
 	{
+		
 		currentVal += division;
 		values.push_back(currentVal);
 	}
-
+	
 	return values;
 
 }
@@ -114,14 +118,20 @@ void drawColour(DrawingWindow& window) {
 
 }
 
+
+
 void drawLine(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour colour) {
 	//window.clearPixels();
 	float xDiff = (to.x - from.x);
 	float yDiff = (to.y - from.y);
-	float numberOfSteps = std::max(abs(xDiff), abs(yDiff))*1.5; //*1.5 to avoid swiss cheese
+	float zDiff = (to.depth - from.depth);
+	//float max_X_Y = std::max(abs(xDiff), abs(yDiff));
+	//float numberOfSteps = std::max(max_X_Y, abs(zDiff));
+	float numberOfSteps = std::max(abs(xDiff), abs(yDiff)) * 2.0; //*2.0 to avoid swiss cheese
 	
-	std::vector<float> xValues = interpolateSingleFloats(from.x, to.x, numberOfSteps+1); //need to add 1 because we want exactly numberOfSteps steps but interpolate would give us numberOfSteps-1.
+	std::vector<float> xValues = interpolateSingleFloats(floor(from.x), ceil(to.x), numberOfSteps+1); //need to add 1 because we want exactly numberOfSteps steps but interpolate would give us numberOfSteps-1.
 	std::vector<float> yValues = interpolateSingleFloats(from.y, to.y, numberOfSteps+1);
+	//std::vector<float> zValues = interpolateSingleFloats(from.depth, to.depth, numberOfSteps + 1);
 	/*
 	for (size_t i = 0; i < xValues.size(); i++) std::cout << "(" << xValues[i] << ", " << yValues[i] << std::endl;
 	std::cout << "end";
@@ -131,10 +141,12 @@ void drawLine(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour co
 	//float xStepSize = xDiff / numberOfSteps;
 	//float yStepSize = yDiff / numberOfSteps;
 
-	for (float i = 0.0; i < numberOfSteps; i++)
+	for (size_t i = 0; i < numberOfSteps; i++)
 	{
 		float x = xValues[i];
 		float y = yValues[i];
+		//float depth = 1.0 / abs(zValues[i]);
+		//std::cout << zValues[i] << std::endl;
 		//float x = from.x + i * xStepSize;
 		//float y = from.y + i * yStepSize;
 		
@@ -143,6 +155,40 @@ void drawLine(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour co
 		//std::cout << "(" << (float)x << ", " << (float)y << std::endl;
 
 		window.setPixelColour(round(x), round(y), col);
+
+	}
+}
+
+//guaranteed this will be a straight line
+void drawLineWithDepth(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour colour) {
+	float xDiff = (to.x - from.x);
+	float yDiff = (to.y - from.y);
+	//float numberOfSteps = abs(xDiff) *2.0;
+	float numberOfSteps = std::max(abs(xDiff), abs(yDiff)) * 2.0;
+	std::vector<float> xValues = interpolateSingleFloats(from.x, to.x, numberOfSteps + 1);
+	std::vector<float> zValues = interpolateSingleFloats(from.depth, to.depth, numberOfSteps + 1);
+	std::vector<float> yValues = interpolateSingleFloats(from.y, to.y, numberOfSteps + 1);
+
+	for (size_t i = 0; i < numberOfSteps; i++)
+	{
+		int x = round(xValues[i]);
+		int y = round(yValues[i]);
+		float depth = 10 / abs(zValues[i]);
+		
+		if (depth >= depthBuffer[x][y]) {
+			uint32_t col = (255 < 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
+			window.setPixelColour(round(x), round(y), col);
+			depthBuffer[x][y] = depth;
+
+		}
+
+		
+
+		//std::cout << "(" << (float)x << ", " << (float)y << std::endl;
+
+		
+		
+		
 	}
 }
 
@@ -153,13 +199,29 @@ void drawStrokedTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour 
 	drawLine(window, vertices.v1(), vertices.v2(), colour);
 }
 
-std::array<CanvasPoint, 3> sortVertices(std::array<CanvasPoint, 3> vertices) {
+std::vector<CanvasPoint> sortVertices(std::vector<CanvasPoint> vertices) {
 	std::sort(vertices.begin(), vertices.end(),
 		[](CanvasPoint v0, CanvasPoint v1) { return v0.y < v1.y; });
 	return vertices;
 }
 
-CanvasPoint interpolatePoint(std::array<CanvasPoint, 3> vertices) {
+float interpolateDepth(CanvasPoint top, CanvasPoint side, CanvasPoint bottom) {
+	float y = side.y;
+	float z;
+	float z_y_ratio = abs((top.depth - bottom.depth) / (top.y - bottom.y));
+	int zDiff = (int)(abs(top.y - side.y) * z_y_ratio);
+	if (bottom.depth < top.depth) {
+		z = top.depth - zDiff;
+	}
+	else {
+		z = top.depth + zDiff;
+	}
+
+	return z;
+}
+
+
+CanvasPoint interpolatePoint(std::vector<CanvasPoint> vertices) {
 	CanvasPoint top = vertices[0];
 	CanvasPoint side = vertices[1];
 	CanvasPoint bottom = vertices[2];
@@ -175,15 +237,19 @@ CanvasPoint interpolatePoint(std::array<CanvasPoint, 3> vertices) {
 		x = top.x + xDiff;
 	}
 
-	CanvasPoint middlePoint(x, y);
-	std::cout << "interpolated: " << middlePoint << std::endl;
+
+	float depth = interpolateDepth(top, side, bottom);
+
+	CanvasPoint middlePoint(x, y, depth);
+	//std::cout << "interpolated: " << middlePoint << std::endl;
 	return middlePoint;
 
 }
 
-void fillFlatBottomTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour colour) {
+void fillFlatBottomTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour colour) {
 	//std::cout << "first func";
-	std::array<CanvasPoint, 3> sortedVertices = sortVertices(vertices.vertices); //extra sort just to be sureee
+	std::vector<CanvasPoint> verticesVector = { triangle.vertices[0], triangle.vertices[1], triangle.vertices[2] };
+	std::vector<CanvasPoint> sortedVertices = sortVertices(verticesVector); //extra sort just to be sureee
 	//std::array<CanvasPoint, 3> sortedVertices = vertices.vertices;
 	//std::array<CanvasPoint, 3> sortedVertices = vertices.vertices;
 	//std::sort(sortedVertices.begin(), sortedVertices.end(), [](CanvasPoint v0, CanvasPoint v1) { return v0.y < v1.y; });
@@ -193,19 +259,22 @@ void fillFlatBottomTriangle(DrawingWindow& window, CanvasTriangle vertices, Colo
 	float yDiff = abs(top.y -bottom.y);
 	std::vector<float> firstEdgeXPoints = interpolateSingleFloats(top.x, bottom.x, yDiff + 1);
 	std::vector<float> secondEdgeXPoints = interpolateSingleFloats(top.x, bottom1.x, yDiff + 1);
+	std::vector<float> firstEdgeZVals = interpolateSingleFloats(top.depth, bottom.depth, yDiff + 1);
+	std::vector<float> secondEdgeZVals = interpolateSingleFloats(top.depth, bottom1.depth, yDiff + 1);
 
 	for (size_t i = 0; i < yDiff; i++)
 	{
-		CanvasPoint startPoint(firstEdgeXPoints[i], top.y + i);
-		CanvasPoint endPoint(secondEdgeXPoints[i], top.y + i);
-		drawLine(window, startPoint, endPoint, colour);
+		CanvasPoint startPoint(firstEdgeXPoints[i], top.y + i, firstEdgeZVals[i]);
+		CanvasPoint endPoint(secondEdgeXPoints[i], top.y + i, secondEdgeZVals[i]);
+		//drawLine(window, startPoint, endPoint, colour);
+		drawLineWithDepth(window, startPoint, endPoint, colour);
 	}
 
 }
 
-void fillFlatTopTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour colour) {
-	
-	std::array<CanvasPoint, 3> sortedVertices = sortVertices(vertices.vertices);
+void fillFlatTopTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour colour) {
+	std::vector<CanvasPoint> verticesVector = { triangle.vertices[0], triangle.vertices[1], triangle.vertices[2] };
+	std::vector<CanvasPoint> sortedVertices = sortVertices(verticesVector);
 	//std::array<CanvasPoint, 3> sortedVertices = vertices.vertices;
 	CanvasPoint top = sortedVertices[0];
 	CanvasPoint top1 = sortedVertices[1];
@@ -214,29 +283,34 @@ void fillFlatTopTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour 
 	//std::cout << "before interpolate";
 	std::vector<float> firstEdgeXPoints = interpolateSingleFloats(top.x, bottom.x, yDiff + 1);
 	std::vector<float> secondEdgeXPoints = interpolateSingleFloats(top1.x, bottom.x, yDiff + 1);
+	std::vector<float> firstEdgeZVals = interpolateSingleFloats(top.depth, bottom.depth, yDiff + 1);
+	std::vector<float> secondEdgeZVals = interpolateSingleFloats(top1.depth, bottom.depth, yDiff + 1);
 
 	for (size_t i = 0; i < yDiff; i++)
 	{
-		CanvasPoint startPoint(firstEdgeXPoints[i], top.y + i);
+		CanvasPoint startPoint(firstEdgeXPoints[i], top.y + i, firstEdgeZVals[i]);
 		//std::cout << startPoint;
-		CanvasPoint endPoint(secondEdgeXPoints[i], top.y + i);
+		CanvasPoint endPoint(secondEdgeXPoints[i], top.y + i, secondEdgeZVals[i]);
 		//std::cout << endPoint << std::endl;
 		//std::cout << "before drawing";
-		drawLine(window, startPoint, endPoint, colour);
+		//drawLine(window, startPoint, endPoint, colour);
+		drawLineWithDepth(window, startPoint, endPoint, colour);
 		//std::cout << "after drawing";
 
 	}
 }
 
-void drawFilledTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour colour) {
+void drawFilledTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour colour) {
 	//std::cout << vertices.vertices[0].x << ", " << vertices.vertices[0].y << std::endl;
-	std::array<CanvasPoint, 3> sortedVertices = sortVertices(vertices.vertices);
+	std::vector<CanvasPoint> verticesVector = { triangle.vertices[0], triangle.vertices[1], triangle.vertices[2] };
+	
+	std::vector<CanvasPoint> sortedVertices = sortVertices(verticesVector);
+	//std::cout << "depths1 " << sortedVertices[0].depth << sortedVertices[1].depth << sortedVertices[2].depth << std::endl;
 	//std::array<CanvasPoint, 3> sortedVertices = vertices.vertices;
 	//std::sort(sortedVertices.begin(), sortedVertices.end(), [](CanvasPoint v0, CanvasPoint v1) { return v0.y < v1.y; });
-	std::cout << sortedVertices[0] << sortedVertices[1] << sortedVertices[2] << std::endl;
+	//std::cout << sortedVertices[0] << sortedVertices[1] << sortedVertices[2] << std::endl;
 	//std::cout << sortedVertices[0] << std::endl;
 	CanvasPoint interpolatedPoint = interpolatePoint(sortedVertices);
-	float middleY = interpolatedPoint.y;
 
 	CanvasPoint top = sortedVertices[0];
 	CanvasPoint side = sortedVertices[1];
@@ -248,9 +322,13 @@ void drawFilledTriangle(DrawingWindow& window, CanvasTriangle vertices, Colour c
 	fillFlatBottomTriangle(window, topTriangle, colour);
 	fillFlatTopTriangle(window, bottomTriangle, colour);
 
-	Colour white(255, 255, 255);
+	//Colour white(255, 255, 255);
 
-	//drawStrokedTriangle(window, vertices, white);
+	//drawStrokedTriangle(window, triangle, white);
+}
+
+void drawTexturedTriangles(DrawingWindow& window) {
+
 }
 
 glm::vec3 parseVector(std::string line) {
@@ -275,11 +353,11 @@ std::vector<int> parseFacet(std::string line) {
 
 	std::vector<int> indices = { stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]) };
 
-	for (size_t i = 0; i < indices.size(); i++)
+	/*for (size_t i = 0; i < indices.size(); i++)
 	{
 		std::cout << indices[i] << " ";
 	}
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 
 	return indices;
 }
@@ -321,14 +399,14 @@ void parseMTL(std::string filename) {
 		if (line.find("newmtl") != std::string::npos) {
 			std::vector<std::string> tokens = split(line, delimiter);
 			currentName = tokens[1];
-			std::cout << currentName << std::endl;
+			//std::cout << currentName << std::endl;
 		}
 		else if (line.find("Kd") != std::string::npos) {
 			std::vector<std::string> tokens = split(line, delimiter);
 			float red = stof(tokens[1]);
 			float green = stof(tokens[2]);
 			float blue = stof(tokens[3]);
-			std::cout << red << " " << green << " " << blue << std::endl;
+			//std::cout << red << " " << green << " " << blue << std::endl;
 			Colour newCol(round(red * 255), round(green * 255), round(blue * 255));
 			colourPalette[currentName] = newCol;
 		}
@@ -337,7 +415,8 @@ void parseMTL(std::string filename) {
 }
 
 glm::vec3 getVertexRelativeToCamera(glm::vec3 cameraPosition, glm::vec3 vertexPosition) {
-	glm::vec3 relative = vertexPosition - cameraPosition;
+	//glm::vec3 relative = vertexPosition - cameraPosition;
+	glm::vec3 relative = cameraPosition - vertexPosition;
 	return relative;
 }
 
@@ -351,14 +430,11 @@ CanvasPoint getCanvasIntersectionPoint(glm::vec3 cameraPosition, glm::vec3 verte
 	u += WIDTH / 2;
 	v += HEIGHT / 2;
 	u = WIDTH - u; //jank
-	CanvasPoint pt(u, v);
-	std::cout << pt << std::endl;
+	CanvasPoint pt(u, v, z);
+	//std::cout << pt << std::endl;
 	return pt;
 }
 
-std::vector<std::vector<float>> populateDepthBuffer() {
-
-}
 
 void drawPointCloud(DrawingWindow& window) {
 	for (ModelTriangle triangle : modelTriangles) {
@@ -385,13 +461,15 @@ void drawWireframe(DrawingWindow& window) {
 }
 
 void drawRasterised(DrawingWindow& window) {
+	window.clearPixels();
 	for (ModelTriangle triangle : modelTriangles) {
-		std::vector<CanvasPoint> relativeVertices;
+		std::vector<CanvasPoint> projectedVertices;
 		for (glm::vec3 vertex : triangle.vertices) {
 			CanvasPoint point = getCanvasIntersectionPoint(CameraPos, vertex, FocalLen);
-			relativeVertices.push_back(point);
+			projectedVertices.push_back(point);
 		}
-		CanvasTriangle relativeTriangle(relativeVertices[0], relativeVertices[1], relativeVertices[2]);
+		CanvasTriangle relativeTriangle(projectedVertices[0], projectedVertices[1], projectedVertices[2]);
+		//std::cout << "depths " << projectedVertices[0].depth << projectedVertices[1].depth << projectedVertices[2].depth << std::endl;
 		Colour colour = triangle.colour;
 		drawFilledTriangle(window, relativeTriangle, colour);
 	}
@@ -428,30 +506,28 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
 }
 
 int main(int argc, char *argv[]) {
-	/*
-	std::vector<glm::vec3> result;
-	glm::vec3 from(1, 4, 9.2);
-	glm::vec3 to(4, 1, 9.8);
-	result = interpolateThreeElementValues(from, to, 4);
-	for (size_t i = 0; i < result.size(); i++) std::cout << glm::to_string(result[i]) << std::endl;
-	std::cout << std::endl;
-	*/
 
 	parseMTL("cornell-box.mtl");
 	parseOBJ("cornell-box.obj");
-	/*for (size_t i = 0; i < modelTriangles.size(); i++)
-	{
-		std::cout << modelTriangles[i] << std::endl;
-		
-	}*/
+
 	
-	std::vector<std::vector<float>> depthBuffer;
+	//std::vector<std::vector<float>> depthBuffer;
 	
 
 	DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
 	SDL_Event event;
 
 	
+	for (size_t i = 0; i < WIDTH; i++)
+	{
+		std::vector<float> row;
+		for (size_t j = 0; j < HEIGHT; j++)
+		{
+			row.push_back(0.0);
+		}
+		depthBuffer.push_back(row);
+	}
+
 
 	while (true) {
 		// We MUST poll for events - otherwise the window will freeze !
@@ -460,6 +536,7 @@ int main(int argc, char *argv[]) {
 		//drawStrokedTriangle(window, triangle, colour);
 		//drawFilledTriangle(window, triangle, colour);
 		drawRasterised(window);
+		//drawWireframe(window);
 		// Need to render the frame at the end, or nothing actually gets shown on the screen !
 		window.renderFrame();
 	}
