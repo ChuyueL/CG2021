@@ -3,9 +3,8 @@
     "",
     "\\libs",
     "\\out",
-    "\\out\\build",
-    "\\out\\build\\x64-Debug",
     "\\src"
   ],
+  "SelectedNode": "\\libs",
   "PreviewInSolutionExplorer": false
 }
