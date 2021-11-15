@@ -1,0 +1,6 @@
+The "winding" order used by the model will impact how you should calculate the surface normals. View <a href="resources/winding.mp4" target="_blank">this video</a> for an explanation of the concept of "winding". The best advice is to just to assume a particular order and try it. You will soon know if you were wrong (all your surfaces will be dark) so you can then just switch to using the other winding order.
+
+When considering the angle that the light hits the surface...  
+you **MUST** use: _the direction vector of the LIGHT from the POINT ON THE SURFACE_  
+and **NOT**: _the direction vector of the POINT ON THE SURFACE from the LIGHT_  
+If you use the wrong one, you will end up lighting the back surface of your triangles !

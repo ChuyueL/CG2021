@@ -1,0 +1,5 @@
+Your next task is to implement a "Specular" lighting effect (as illustrated in the introductory animation to this workbook). The slides and audio narration in this current section provide a description of specular light and how to calculate the brightness of points on a specularly illuminated surface.
+
+This process involves calculating the outgoing angle of reflection `R` of an incoming beam from the light. This in itself is more complex than you might initially think. For this reason, we have included an additional slide and audio narration in order to help you calculate this particular element. View these now if you haven't done so already.
+
+When you are ready, implement a specular lighting effect in your renderer. As with the previous tasks, you should again make use of the GLM `dot` function, as well as the surfaces normals that you previously calculated. The image below provides some examples of the kinds of specular highlight you might expect to see for different exponent values:
