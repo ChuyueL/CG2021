@@ -1,0 +1,7 @@
+In the real world, light bounces off objects (potentially multiple times) in order to illuminate "hard to reach" areas of a model (even areas that are in shadow). View the slides and audio narration for more insight into this notion of "Global Illumination". As you will see, calculating this kind of indirect lighting would be computationally expensive. It is possible however to implement a plausible approximation to such lighting with very little additional effort.
+
+Two approaches to creating such "ambient" lighting are commonly used:
+- Minimum threshold: An IF statement (or call to the `max` function) is used to ensure that the brightness of any point never falls below a certain threshold level.
+- Universal supplement: The brightness of a pixel is calculated, then a fixed amount of additional light is added (the same amount to each and every pixel).
+
+Each approach has its own subtle advantages and disadvantages, yet both can be used to achieve the desired effect as illustrated in the image below. Compare the shadow regions of this image with those of the previous week's workbook (which included no ambient lighting).

@@ -1,0 +1,2 @@
+The Cornell Box isn't the most useful model for testing Gouraud shading (it's hard to smooth off the edges of a cube !). For this reason, we have provided a simple <a href="resources/sphere.obj" target="_blank">additional model</a> for you to test your code with.
+
