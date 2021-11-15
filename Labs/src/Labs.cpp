@@ -12,11 +12,12 @@
 #include <fstream>
 #include <ModelTriangle.h>
 #include <TextureMap.h>
+#include <RayTriangleIntersection.h>
 #include <unordered_map>
 
-#define WIDTH 640
-#define HEIGHT 480
-#define MULTIPLIER 700
+#define WIDTH 320
+#define HEIGHT 240
+#define MULTIPLIER 600
 #define PI 3.14159265
 
 std::vector<CanvasTriangle> texturedTriangles;
@@ -30,6 +31,8 @@ std::unordered_map<std::string, Colour> colourPalette;
 //float FocalLen = 1.0;
 
 std::vector<std::vector<float>> depthBuffer;
+
+glm::vec3 lightPos(0.0, 0.40, 0.0);
 
 struct camera {
 	glm::vec3 cameraPos;
@@ -195,11 +198,30 @@ void drawLine(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour co
 
 //guaranteed this will be a straight line
 void drawLineWithDepth(DrawingWindow& window, CanvasPoint from, CanvasPoint to, Colour colour) {
-	float xDiff = (to.x - from.x);
+	//float xDiff = (to.x - from.x);
+	float xDiff;
+	int new_to_x;
+	int new_from_x;
+	if (to.x > from.x) {
+		xDiff = (ceil(to.x) - floor(from.x));
+		new_to_x = ceil(to.x);
+		new_from_x = floor(from.x);
+	}
+	else if (to.x < from.x) {
+		xDiff = (floor(to.x) - ceil(from.x));
+		new_to_x = floor(to.x);
+		new_from_x = ceil(from.x);
+	}
+	else {
+		xDiff = (to.x) - (from.x);
+		new_to_x = to.x;
+		new_from_x = from.x;
+	}
 	float yDiff = (to.y - from.y);
 	//float numberOfSteps = abs(xDiff) *2.0;
 	float numberOfSteps = std::max(abs(xDiff), abs(yDiff)) * 2.0;
-	std::vector<float> xValues = interpolateSingleFloats(from.x, to.x, numberOfSteps + 1);
+	//std::vector<float> xValues = interpolateSingleFloats(from.x, to.x, numberOfSteps + 1);
+	std::vector<float> xValues = interpolateSingleFloats(new_from_x, new_to_x, numberOfSteps + 1);
 	std::vector<float> zValues = interpolateSingleFloats(from.depth, to.depth, numberOfSteps + 1);
 	std::vector<float> yValues = interpolateSingleFloats(from.y, to.y, numberOfSteps + 1);
 
@@ -207,7 +229,7 @@ void drawLineWithDepth(DrawingWindow& window, CanvasPoint from, CanvasPoint to, 
 	{
 		int x = round(xValues[i]);
 		int y = round(yValues[i]);
-		float depth = 1 / abs(zValues[i]);
+		float depth = 1.0 / abs(zValues[i]);
 		
 		if (depth > depthBuffer[x][y]) {
 			uint32_t col = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
@@ -247,8 +269,11 @@ float interpolateDepth(CanvasPoint top, CanvasPoint side, CanvasPoint bottom) {
 	if (bottom.depth < top.depth) {
 		z = top.depth - zDiff;
 	}
-	else {
+	else if (bottom.depth > top.depth) {
 		z = top.depth + zDiff;
+	}
+	else {
+		z = top.depth;
 	}
 
 	return z;
@@ -264,6 +289,7 @@ CanvasPoint interpolatePoint(std::vector<CanvasPoint> vertices) {
 	float x;
 	float x_y_ratio = abs((top.x - bottom.x) / (top.y - bottom.y));
 	float xDiff = (abs(top.y - side.y) * x_y_ratio);
+	//find the x coord of the new point
 	if (bottom.x < top.x) {
 		x = top.x - xDiff;
 	}
@@ -271,6 +297,7 @@ CanvasPoint interpolatePoint(std::vector<CanvasPoint> vertices) {
 		x = top.x + xDiff;
 	}
 
+	/*x = top.x + x_y_ratio * (bottom.x - top.x);*/
 
 	float depth = interpolateDepth(top, side, bottom);
 
@@ -332,6 +359,7 @@ void fillFlatTopTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour 
 		//std::cout << "after drawing";
 
 	}
+	
 }
 
 void drawFilledTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour colour) {
@@ -358,7 +386,7 @@ void drawFilledTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour c
 
 	//Colour white(255, 255, 255);
 
-	//drawStrokedTriangle(window, triangle, white);
+	//drawStrokedTriangle(window, triangle, colour);
 }
 
 //Guaranteed to be a horizontal line in CanvasPoint space
@@ -651,7 +679,7 @@ void lookAt() {
 
 void drawRasterised(DrawingWindow& window) {
 	window.clearPixels();
-	glm::mat3 rotation = makeYRotationMatrix(0.5);
+	glm::mat3 rotation = makeYRotationMatrix(1.0);
 	camera.cameraPos = rotation * camera.cameraPos; //orbit
 	lookAt();
 	for (ModelTriangle triangle : modelTriangles) {
@@ -667,6 +695,115 @@ void drawRasterised(DrawingWindow& window) {
 	}
 }
 
+RayTriangleIntersection getClosestIntersection(glm::vec3 rayDir, glm::vec3 rayStart, int vertexTriangleIndex) {
+	//rayDir = glm::normalize(rayDir);
+	float closestDistance = FLT_MAX;
+	glm::vec3 default(0, 0, 0);
+	Colour white(255, 255, 255);
+	ModelTriangle defaultTriangle(default, default, default, white);
+	RayTriangleIntersection solution(default, closestDistance, defaultTriangle, -1);
+	for (size_t i = 0; i < modelTriangles.size(); i++) {
+		ModelTriangle triangle = modelTriangles[i];
+		std::vector<glm::vec3> relativeVertices;
+		for (glm::vec3 vertex : triangle.vertices) {
+			glm::vec3 relativeVertex = getVertexRelativeToCamera(vertex);
+			relativeVertices.push_back(relativeVertex);
+		}
+		//glm::vec3 e0 = relativeVertices[1] - relativeVertices[0];
+		//glm::vec3 e1 = relativeVertices[2] - relativeVertices[0];
+		//glm::vec3 SPVector = camera.cameraPos - relativeVertices[0];
+		glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+		glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+		//glm::vec3 SPVector = camera.cameraPos - triangle.vertices[0];
+		glm::vec3 SPVector = rayStart - triangle.vertices[0];
+		glm::mat3 DEMatrix(-rayDir, e0, e1);
+		glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
+		float t = possibleSolution[0];
+		float u = possibleSolution[1];
+		float v = possibleSolution[2];
+		if (t < closestDistance && t > 0) {
+			if ((u >= 0.0) && (u <= 1.0)) {
+				if ((v >= 0.0) && (v <= 1.0)) {
+					if ((u + v) <= 1.0) {
+						if (i != vertexTriangleIndex) {
+							glm::vec3 intersectionPoint = triangle.vertices[0] + u * e0 + v * e1; //point relative to MODEL origin
+							RayTriangleIntersection solutionData(intersectionPoint, t, triangle, i);
+							closestDistance = t;
+							solution = solutionData;
+						}
+						
+					}
+				}
+			}
+			
+		}
+	}
+	return solution;
+	
+}
+
+
+
+bool vertexCanSeeLight(glm::vec3 vertex, int vertexTriangleIndex) {
+	glm::vec3 rayDirection = lightPos - vertex;
+	RayTriangleIntersection intersectionInfo = getClosestIntersection(rayDirection, vertex, vertexTriangleIndex);
+	if (intersectionInfo.triangleIndex != -1) {
+		//if (intersectionInfo.triangleIndex == vertexTriangleIndex) {
+		//	//return true;
+		//	return vertexCanSeeLight(intersectionInfo.intersectionPoint, vertexTriangleIndex);
+		//}
+		float distanceToIntersection = glm::l2Norm(intersectionInfo.intersectionPoint, vertex);
+		float distanceToLight = glm::l2Norm(lightPos, vertex);
+		if (distanceToIntersection > distanceToLight) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	return true;
+}
+
+void drawRayTraced(DrawingWindow& window) {
+	window.clearPixels();
+	for (size_t row = 0; row < HEIGHT; row++)
+	{
+		for (size_t col = 0; col < WIDTH; col++)
+		{
+			//SDL has top left as (0,0) so need to shift everything to the middle of the image plane. By subtracting, we get the same coordinate
+			//as is represented by (row, col) (where (0,0) is top left) but now in the reference frame where (0,0) is centre.
+			float imagePlaneX = col - WIDTH / 2.0;
+			float imagePlaneY = row - HEIGHT / 2.0;
+
+			//imagine image plane actually has size 1 on each side (because model is scaled this way)
+			imagePlaneX = imagePlaneX / 400;
+			imagePlaneY = -imagePlaneY / 400;
+
+			//subtract the focal length for z to get the direction of the ray from camera to this particular pixel (note the image plane IS
+			//the SDL window)
+			glm::vec3 imagePlanePoint(imagePlaneX, imagePlaneY, camera.cameraPos.z - camera.focalLen);
+			glm::vec3 rayDirection = imagePlanePoint - camera.cameraPos;
+
+			RayTriangleIntersection intersectionInfo = getClosestIntersection(rayDirection, camera.cameraPos, -1); //no triangle index
+
+			if (intersectionInfo.triangleIndex != -1) {
+				glm::vec3 vertexRelativeModel = intersectionInfo.intersectionPoint;
+				//std::cout << glm::to_string(vertexRelativeModel) << std::endl;
+				Colour colour;
+				if (vertexCanSeeLight(vertexRelativeModel, intersectionInfo.triangleIndex)) {
+					colour = intersectionInfo.intersectedTriangle.colour;
+					
+				}
+				else {
+					colour = Colour(0, 0, 0); //black
+				}
+				uint32_t colourInt = (255 << 24) + (colour.red << 16) + (colour.green << 8) + colour.blue;
+				window.setPixelColour(col, row, colourInt);
+			}
+			
+		}
+	}
+}
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
 	if (event.type == SDL_KEYDOWN) {
@@ -768,7 +905,7 @@ void clearDepthBuffer() {
 
 int main(int argc, char *argv[]) {
 
-	glm::vec3 camPos (0, 0, 2.0);
+	glm::vec3 camPos (0.0, 0.0, 4.0);
 	camera.cameraPos = camPos;
 	camera.focalLen = 1.0;
 	glm::vec3 rightOrientation(1, 0, 0);
@@ -809,33 +946,15 @@ int main(int argc, char *argv[]) {
 		depthBuffer.push_back(row);
 	}
 	
-
-	CanvasPoint p1(160, 10);
-	TexturePoint tp1(195, 5);
-	p1.texturePoint = tp1;
-
-	CanvasPoint p2(300, 230);
-	TexturePoint tp2(395, 380);
-	p2.texturePoint = tp2;
-
-	CanvasPoint p3(10, 150);
-	TexturePoint tp3(65, 330);
-	p3.texturePoint = tp3;
-
-	CanvasTriangle texturedTri(p1, p2, p3);
-	texturedTriangles.push_back(texturedTri);
+	glm::vec3 rayDirection(-0.1, -0.1, -2.0);
+	std::cout << getClosestIntersection(rayDirection, camera.cameraPos, -1);
 
 	while (true) {
-		clearDepthBuffer();
+		//clearDepthBuffer();
 		//std::cout << glm::to_string(camera.cameraPos) << std::endl;
 		// We MUST poll for events - otherwise the window will freeze !
 		if (window.pollForInputEvents(event)) handleEvent(event, window);
-		//draw(window);
-		//drawStrokedTriangle(window, triangle, colour);
-		//drawFilledTriangle(window, triangle, colour);
-		drawRasterised(window);
-		//drawWireframe(window);
-		//displayTexture(window);
+		drawRayTraced(window);
 		// Need to render the frame at the end, or nothing actually gets shown on the screen !
 		
 		window.renderFrame();
