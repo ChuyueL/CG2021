@@ -1,0 +1,3 @@
+This workbook does not contain any explicit practical activities for you to complete. Rather, it provides a "playlist" of slides, audio commentary and animations of advanced rendering topics. Some of these techniques you may wish to implement in your rendering engine, others you may wish only to gain an appreciation of.
+
+If you are taking the coursework assessment variant of this unit, implementing a selection of these in your final assignment should result in a higher grade. If you are taking the examination variant of this unit, you will not be assessed on these topics - however you may wish to explore them for your own interest.

@@ -1,0 +1,3 @@
+Finding the closest intersection between a ray and a set of triangles is a costly activity. This is especially true with complex models when each ray being cast must be checked against a potentially very large number of model. 
+
+What if there was a way for our model to consist of just a few simple triangles, but then "fake" complex geometry using "light & shadows". This may sounds like magic, but bump maps allow us to do just that. Take a look at the slides, narration and animation to find out how this can be done.

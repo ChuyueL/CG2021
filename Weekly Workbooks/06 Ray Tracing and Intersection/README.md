@@ -12,7 +12,7 @@ It is advisable to continue working with your current project and augment it wit
 The code that you will write in this workbook will be VERY resource intensive. If you find that your renderer is running too slowly to allow you to navigate the camera around the scene effectively, then you might like to try using the optimised `make speedy` build rule.  
 
 
-# 
+#
 ### Task 2: Closest Intersection
  <a href='02%20Closest%20Intersection/slides/segment-1.pdf' target='_blank'> ![](../../resources/icons/slides.png) </a> <a href='02%20Closest%20Intersection/audio/segment-1.mp4' target='_blank'> ![](../../resources/icons/audio.png) </a> <a href='02%20Closest%20Intersection/audio/segment-2.mp4' target='_blank'> ![](../../resources/icons/audio.png) </a> <a href='02%20Closest%20Intersection/animation/segment-1.mp4' target='_blank'> ![](../../resources/icons/animation.png) </a> <a href='02%20Closest%20Intersection/animation/segment-2.mp4' target='_blank'> ![](../../resources/icons/animation.png) </a>
 
@@ -43,7 +43,7 @@ Your function is going to need to return various details about the intersection 
 In order to help you test the correct operation of your function, use the following test case: a `cameraPosition` of `[0.0, 0.0, 4.0]` and a `rayDirection` of `[-0.1, -0.1, -2.0]` should result in a closest intersection distance `t` of approximately `1.979`. Note that this test case assumes you are using the standard Cornell Box model with a model scaling of `0.17` and that you haven't done anything strange when loading in the OBJ geometry data (i.e. not flipping or inverting of coordinates). If you function does agree with this result, then it _could_ still be correct (if you are storing or manipulating your model in an unusual way !)  
 
 
-# 
+#
 ### Task 3: Validating Intersections
  <a href='03%20Validating%20Intersections/animation/segment-1.mp4' target='_blank'> ![](../../resources/icons/animation.png) </a>
 
@@ -58,7 +58,7 @@ In order to solve this problem, we simply have to validate the coordinates of a 
 ```
 
 You should also check that the distance `t` from the camera to the intersection is positive - otherwise you may end up rendering triangles that are actually _behind_ the camera !
-  
+
 
 
 ![](03%20Validating%20Intersections/images/outside-bounds.jpg)
@@ -67,13 +67,13 @@ You should also check that the distance `t` from the camera to the intersection 
 Test your `getClosestIntersection` function by passing it a direction vector with a _known_ intersection (e.g. the ray that is fired through the dead centre of the image plane _should_ intersect with the front of the blue box in the test model).  
 
 
-# 
+#
 ### Task 4: Ray Tracing the Scene
  <a href='04%20Ray%20Tracing%20the%20Scene/slides/segment-1.pdf' target='_blank'> ![](../../resources/icons/slides.png) </a> <a href='04%20Ray%20Tracing%20the%20Scene/audio/segment-1.mp4' target='_blank'> ![](../../resources/icons/audio.png) </a>
 
 Now that you have a function that can identify the closest valid intersection of a single ray, we can use this in order to render an entire scene ! Write a new `draw` function that renders the Cornell Box model using Ray Tracing. Don't throw away your old "rasterising" `draw` function - you are going to need this later. Instead you should rename it to something appropriate (such as `drawRasterisedScene`).
 
-In your new `draw` method, loop through each pixel on the image plane (top-to-bottom, left-to-right), casting a ray from the camera, _through_ the current pixel and into the scene. Using your previously written `getClosestIntersection` function, determine if the ray intersects with a triangle in the model. When a valid intersection has been identified, paint the image plane pixel with the colour of the closest intersected triangle. 
+In your new `draw` method, loop through each pixel on the image plane (top-to-bottom, left-to-right), casting a ray from the camera, _through_ the current pixel and into the scene. Using your previously written `getClosestIntersection` function, determine if the ray intersects with a triangle in the model. When a valid intersection has been identified, paint the image plane pixel with the colour of the closest intersected triangle.
 
 Remember that in this task, you are converting _from_ a canvas position _to_ a direct/location in three dimensional space. As such you need to do the exact _opposite_ of your previously written `getCanvasIntersectionPoint` function (where you down-projected a 3D vertex location into a 2D canvas position). For this reason, you need to do **everything** in _reverse_: subtracting when you previously added, dividing where you previously multiplied. The order which you applied the operations will also need to be reversed ! Clearly this is going to require a fair bit of thinking about !!!
 
@@ -86,7 +86,7 @@ When everything is working properly, you should end up with a render that looks 
 At this stage, it probably doesn't seem like you have made any progress - if anything, this is a _slower_ way of getting the same results as with the rasteriser. In the following tasks however (and next week as well), we will be doing things that are either hard or impossible to do with a rasteriser - so stick with it, this is all going to be worth it !  
 
 
-# 
+#
 ### Task 5: Casting Shadows
  <a href='05%20Casting%20Shadows/slides/segment-1.pdf' target='_blank'> ![](../../resources/icons/slides.png) </a> <a href='05%20Casting%20Shadows/audio/segment-1.mp4' target='_blank'> ![](../../resources/icons/audio.png) </a>
 
@@ -102,10 +102,10 @@ Once you have implemented a shadow feature, your render of the Cornell box shoul
 ![](05%20Casting%20Shadows/images/without-ambient.jpg)
 
 **Hints & Tips:**  
-You are going to need a new `vec3` variable to hold the position of a single-point light source. A location in the middle of the room, above the origin, somewhere near the ceiling would seem sensible place for it (e.g. `[0.0, 0.75, 0.0]`)  
+You are going to need a new `vec3` variable to hold the position of a single-point light source. A location in the middle of the room, above the origin, somewhere near the ceiling (but still inside the room) would seem a sensible place for it.
 
 
-# 
+#
 ### Task 6: Shadow Acne
  <a href='06%20Shadow%20Acne/slides/segment-1.pdf' target='_blank'> ![](../../resources/icons/slides.png) </a> <a href='06%20Shadow%20Acne/audio/segment-1.mp4' target='_blank'> ![](../../resources/icons/audio.png) </a>
 
@@ -120,7 +120,7 @@ If you need to compare two triangles for equality, make sure you use their **ind
 To support this, the `RayTriangleIntersection` class has an attribute called `triangleIndex` that can be used to store the index number of a triangle being intersected. Note that you'll have to fill this attribute yourself with a suitable value when your `getClosestIntersection` function detects a valid intersection.   
 
 
-# 
+#
 ### Task 7: Interactive Renderer Switching
 
 
@@ -133,5 +133,5 @@ As a final task in this workbook, add some additional key event handlers to your
 This will prove very useful later on in the unit for interactive testing: it will allow you to navigate the camera around the scene using the FAST wireframe or rasterised renderers. Then, once the camera is in the desired position, you can switch to the (much slower) Ray Traced renderer to view the fully lit scene from the current position.  
 
 
-# 
+#
 End of Workbook

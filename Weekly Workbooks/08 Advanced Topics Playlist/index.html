@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>08 Advanced Topics Playlist</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">08 Advanced Topics Playlist</h1>
+</header>
+<h2 id="advanced-topics-playlist">Advanced Topics Playlist</h2>
+<h3 id="weekly-briefing"><a href='https://web.microsoftstream.com/group/1dcf4e99-7117-4f18-9936-c5e6712daf00?view=videos' target='_blank'> Weekly Briefing <img src="../../resources/icons/briefing.png" /> </a></h3>
+<h3 id="task-1-introduction">Task 1: Introduction</h3>
+<p>This workbook does not contain any explicit practical activities for you to complete. Rather, it provides a “playlist” of slides, audio commentary and animations of advanced rendering topics. Some of these techniques you may wish to implement in your rendering engine, others you may wish only to gain an appreciation of.</p>
+<p>If you are taking the coursework assessment variant of this unit, implementing a selection of these in your final assignment should result in a higher grade. If you are taking the examination variant of this unit, you will not be assessed on these topics - however you may wish to explore them for your own interest.</p>
+<h1 id="section"></h1>
+<h3 id="task-2-perspective-correction">Task 2: Perspective Correction</h3>
+<p><a href='02%20Perspective%20Correction/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='02%20Perspective%20Correction/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='02%20Perspective%20Correction/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>There is an issue with the basic texture mapping approach that we used in the rasteriser workbook. The problem is that it doesn’t take into account the effect of perspective. This is illustrated in the image below - the left hand side shows the a naive (non-corrected) texture and the right hand side shows the perspective corrected version of the same texture. You should be able to see that the left hand image is clearly not right. Review the slides and audio narration to gain an understanding of the nature of the problem and how we might go about solving it.</p>
+<p><img src="02%20Perspective%20Correction/images/perspective-correction.jpg" /></p>
+<h1 id="section-1"></h1>
+<h3 id="task-3-soft-shadow">Task 3: Soft Shadow</h3>
+<p><a href='03%20Soft%20Shadow/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='03%20Soft%20Shadow/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='03%20Soft%20Shadow/audio/segment-2.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='03%20Soft%20Shadow/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>Up until this point we have taken a simplistic approach to shadows. By only considering single point light sources we can only produce naive and simplistic “hard” shadows (as illustrated in the left hand image below). If we want to implement more realistic “soft” shadows (as illustrated in the right hand image below) we are going to need a more sophisticated approach. View the animation linked to above for a deeper understanding of what we are trying to achieve.</p>
+<p>The simplest (but by no means most efficient) way to implement soft shadows is to use multi-point light sources. View the slides and audio narration linked to above for an explanation of how to implement this approach. If you decide to implement soft shadows using this technique, be prepared for a significant increase in rendering time !</p>
+<p><img src="03%20Soft%20Shadow/images/soft-shadow.jpg" /></p>
+<h1 id="section-2"></h1>
+<h3 id="task-4-reflective-materials">Task 4: Reflective Materials</h3>
+<p><a href='04%20Reflective%20Materials/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='04%20Reflective%20Materials/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='04%20Reflective%20Materials/audio/segment-2.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='04%20Reflective%20Materials/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>Rather than rendering just opaque, matt surfaces, it would be nice if we could render more complex materials. The slides, audio narration and animation above provide details of how to render triangles as reflective surfaces - in order to represent materials such as mirrors and metals.</p>
+<p><img src="04%20Reflective%20Materials/images/reflective.jpg" /></p>
+<h1 id="section-3"></h1>
+<h3 id="task-5-environment-maps">Task 5: Environment Maps</h3>
+<p><a href='05%20Environment%20Maps/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='05%20Environment%20Maps/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a></p>
+<p>The problem with rendering mirrored surfaces is that they reflect everything that surrounds them ! This can make rendering complex scenes particularly costly. We can however use flat images in the form of “Environment Maps” to capture a view of the surrounding area from the perspective of a 3D object. Because these maps are flat images (rather than 3D models in their own right) this can make the computation of reflections much more efficient.</p>
+<p><img src="05%20Environment%20Maps/images/env-map.jpg" /></p>
+<h1 id="section-4"></h1>
+<h3 id="task-6-refractive-materials">Task 6: Refractive Materials</h3>
+<p><a href='06%20Refractive%20Materials/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='06%20Refractive%20Materials/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='06%20Refractive%20Materials/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a> <a href='06%20Refractive%20Materials/animation/segment-2.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>Rather than rendering only opaque surfaces it would be nice if we could transparent materials as well. The slides, audio narration and animations above provide details of how to render triangles as refractive surfaces - in order to represent materials such as glass or water.</p>
+<p>Correctly implementing transparent materials is a <strong>difficult</strong> task. This is because we must not only deal with <em>refraction</em> of light, but ALSO the <em>reflection</em> of rays. When the angle of incidence is very shallow (as shown on the right hand side in the image below) the refracted ray does not escape the block. In this situation, the surface of the block acts as a mirror - resulting in internal reflection of the ray.</p>
+<p>When attempting an implementation of refractive materials , you will find <a href="https://ricktu288.github.io/ray-optics/" target="_blank">this online optics tool</a> useful in testing and validating you results.    </p>
+<p><img src="06%20Refractive%20Materials/images/internal-reflection.jpg" /></p>
+<h1 id="section-5"></h1>
+<h3 id="task-7-bump-maps">Task 7: Bump Maps</h3>
+<p><a href='07%20Bump%20Maps/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='07%20Bump%20Maps/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='07%20Bump%20Maps/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>Finding the closest intersection between a ray and a set of triangles is a costly activity. This is especially true with complex models when each ray being cast must be checked against a potentially very large number of model.</p>
+<p>What if there was a way for our model to consist of just a few simple triangles, but then “fake” complex geometry using “light &amp; shadows”. This may sounds like magic, but bump maps allow us to do just that. Take a look at the slides, narration and animation to find out how this can be done.</p>
+<p><img src="07%20Bump%20Maps/images/bump-map.jpg" /></p>
+<h1 id="section-6"></h1>
+<h3 id="task-8-photon-maps">Task 8: Photon Maps</h3>
+<p><a href='08%20Photon%20Maps/slides/segment-1.pdf' target='_blank'> <img src="../../resources/icons/slides.png" /> </a> <a href='08%20Photon%20Maps/audio/segment-1.mp4' target='_blank'> <img src="../../resources/icons/audio.png" /> </a> <a href='08%20Photon%20Maps/animation/segment-1.mp4' target='_blank'> <img src="../../resources/icons/animation.png" /> </a></p>
+<p>Previously we used ambient lighting as an approximation to global illumination. However, this is a very big approximation that prevents us from rendering certain types of specialist lighting effects. <em>Photon maps</em> offer a more sophisticated approach that allow us to precompute patterns of light dispersal in order to (relatively) efficiently render more realistic indirect illumination. Take a look at the slides, narration and animation to gain an insight into this technique.</p>
+<p><img src="08%20Photon%20Maps/images/photon-map.jpg" /></p>
+<h1 id="section-7"></h1>
+<p>End of Workbook</p>
+</body>
+</html>
